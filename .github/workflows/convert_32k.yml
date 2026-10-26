@@ -1,41 +1,8 @@
-name: Convert Video to 32K
-
-on:
-  workflow_dispatch:
-
-jobs:
-  scale_32k:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Maximize build space
-        run: |
-          sudo rm -rf /usr/share/dotnet
-          sudo rm -rf /usr/local/lib/android
-          sudo rm -rf /opt/ghc
-
-      - name: Install FFmpeg & Tools
-        run: |
-          sudo apt update
-          sudo apt install -y ffmpeg python3-pip
-          pip3 install --break-system-packages gdown
-
-      - name: Download Video from Google Drive
-        run: |
-          gdown "https://drive.google.com/uc?id=1SF0JB2gQaOV-2dxI2POoFr0N0O_N7ego" -O input.mp4
-
-      - name: Convert to 32K (30720x17280)
+      - name: Convert to 16K Vertical
         run: |
           ffmpeg -i input.mp4 \
-            -vf "scale=30720:17280:flags=bicubic" \
-            -c:v libvpx-vp9 \
-            -b:v 0 -crf 30 \
-            -threads 4 \
+            -vf "scale=8640:15360:flags=bicubic" \
+            -c:v libsvtav1 \
+            -crf 32 -preset 8 \
             -c:a copy \
-            output_32k.mkv
-
-      - name: Upload 32K Video as Artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: video-32k
-          path: output_32k.mkv
-          retention-days: 1
+            output_16k.mkv
